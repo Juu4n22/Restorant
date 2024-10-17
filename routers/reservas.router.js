@@ -1,24 +1,27 @@
-/// RUTAS DEL MODULO ///
 const express = require("express");
 const router = express.Router();
 
 const controller = require("../controllers/reservas.controller");
-//// METODO GET  /////
 
-// Para todos los productos
-router.get('/', controller.allReservas);
+// Rutas para reservas
+router.get('/reservas', controller.allReservas);
+router.get('/reservas/:id_reserva', controller.showReserva);
+router.post('/reservas', controller.storeReserva);
+router.put('/reservas/:id_reserva', controller.updateReserva);
+router.delete('/reservas/:id_reserva', controller.destroyReserva);
 
-// Para un producto
-router.get('/:id_reserva', controller.showReserva);
+// Rutas para mesas
+router.get('/mesas', controller.allMesas);
+router.get('/mesas/:id_mesa', controller.showMesa);
+router.post('/mesas', controller.storeMesa);
+router.put('/mesas/:id_mesa', controller.updateMesa);
+router.delete('/mesas/:id_mesa', controller.destroyMesa);
 
-//// METODO POST  ////
-router.post('/', controller.storeReserva);
+// Rutas para turnos
+router.get('/turnos', controller.allTurnos);
+router.get('/turnos/:id_turno', controller.showTurno);
+router.post('/turnos', controller.storeTurno);
+router.put('/turnos/:id_turno', controller.updateTurno);
+router.delete('/turnos/:id_turno', controller.destroyTurno);
 
-//// METODO PUT  ////
-router.put('/:id_reserva', controller.updateReserva);
-
-//// METODO DELETE ////
-router.delete('/:id_reserva', controller.destroyReserva);
-
-// EXPORTAR ROUTERS
 module.exports = router;
