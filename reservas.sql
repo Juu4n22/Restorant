@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-10-2024 a las 03:42:35
+-- Tiempo de generación: 02-11-2024 a las 18:46:11
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -20,6 +20,20 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `reservas`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `categorias`
+--
+
+CREATE TABLE `categorias` (
+  `id_categoria` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -51,6 +65,22 @@ INSERT INTO `mesas` (`id_mesa`, `numero_mesa`, `capacidad`, `estado`, `created_a
 (8, 8, 6, 'disponible', '2024-10-17 00:17:12', '2024-10-17 00:17:12'),
 (9, 9, 2, 'disponible', '2024-10-17 00:17:12', '2024-10-17 00:17:12'),
 (10, 10, 4, 'disponible', '2024-10-17 00:17:12', '2024-10-17 00:17:12');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `platos`
+--
+
+CREATE TABLE `platos` (
+  `id_plato` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `id_categoria` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -100,15 +130,52 @@ INSERT INTO `turnos` (`id_turno`, `hora_inicio`, `hora_fin`, `descripcion`, `cre
 (1, '12:00:00', '16:00:00', 'Turno de almuerzo', '2024-10-17 00:17:19', '2024-10-17 00:17:19'),
 (2, '18:00:00', '22:00:00', 'Turno de cena', '2024-10-17 00:17:19', '2024-10-17 00:17:19');
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `usuarios`
+--
+
+CREATE TABLE `usuarios` (
+  `id_usuario` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `rol` enum('admin','usuario') NOT NULL DEFAULT 'usuario',
+  `imagen` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `password`, `rol`, `imagen`, `created_at`, `updated_at`) VALUES
+(4, 'Admin User', 'admin@example.com', '$2y$10$jxaibnwMLW0Gp3heqWx6iO19eWiM3I.ctP74FeNgmGw2KenCOIiqK', 'admin', NULL, '2024-11-02 16:41:41', '2024-11-02 16:41:41');
+
 --
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `categorias`
+--
+ALTER TABLE `categorias`
+  ADD PRIMARY KEY (`id_categoria`);
 
 --
 -- Indices de la tabla `mesas`
 --
 ALTER TABLE `mesas`
   ADD PRIMARY KEY (`id_mesa`);
+
+--
+-- Indices de la tabla `platos`
+--
+ALTER TABLE `platos`
+  ADD PRIMARY KEY (`id_plato`),
+  ADD KEY `id_categoria` (`id_categoria`);
 
 --
 -- Indices de la tabla `reservas`
@@ -125,14 +192,33 @@ ALTER TABLE `turnos`
   ADD PRIMARY KEY (`id_turno`);
 
 --
+-- Indices de la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `categorias`
+--
+ALTER TABLE `categorias`
+  MODIFY `id_categoria` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `mesas`
 --
 ALTER TABLE `mesas`
   MODIFY `id_mesa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT de la tabla `platos`
+--
+ALTER TABLE `platos`
+  MODIFY `id_plato` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `reservas`
@@ -147,8 +233,20 @@ ALTER TABLE `turnos`
   MODIFY `id_turno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+-- AUTO_INCREMENT de la tabla `usuarios`
+--
+ALTER TABLE `usuarios`
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `platos`
+--
+ALTER TABLE `platos`
+  ADD CONSTRAINT `platos_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`);
 
 --
 -- Filtros para la tabla `reservas`

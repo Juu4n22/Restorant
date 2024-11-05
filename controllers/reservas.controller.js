@@ -1,6 +1,132 @@
 const db = require("../db/db");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-// Métodos para reservas
+// Función para verificar el rol de administrador
+const checkAdminRole = (req, res, next) => {
+    console.log('User in checkAdminRole:', req.user); 
+    if (req.user && req.user.rol === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Acceso denegado. Se requiere rol de administrador.' });
+    }
+};
+
+// Funciones relacionadas con usuarios
+const allUsuarios = (req, res) => {
+    const sql = "SELECT id_usuario, nombre, email, rol, imagen, created_at, updated_at FROM usuarios";
+    db.query(sql, (error, rows) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        res.json(rows);
+    }); 
+};
+
+const showUsuario = (req, res) => {
+    const {id_usuario} = req.params;
+    const sql = "SELECT id_usuario, nombre, email, rol, imagen, created_at, updated_at FROM usuarios WHERE id_usuario = ?";
+    db.query(sql, [id_usuario], (error, rows) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(rows.length == 0){
+            return res.status(404).send({error : "ERROR: No existe el usuario buscado"});
+        };
+        res.json(rows[0]);
+    }); 
+};
+
+const register = async (req, res) => {
+    try {
+        const { nombre, email, password, rol } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const imagen = req.file ? req.file.filename : null;
+
+        const sql = "INSERT INTO usuarios (nombre, email, password, rol, imagen) VALUES (?, ?, ?, ?, ?)";
+        db.query(sql, [nombre, email, hashedPassword, rol, imagen], (error, result) => {
+            if (error) {
+                return res.status(500).json({ error: "Error al registrar usuario" });
+            }
+            res.status(201).json({ mensaje: "Usuario registrado exitosamente", id_usuario: result.insertId });
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+};
+
+const updateUsuario = async (req, res) => {
+    const {id_usuario} = req.params;
+    const { nombre, email, password, rol } = req.body;
+    const imagen = req.file ? req.file.filename : null;
+
+    let sql = "UPDATE usuarios SET nombre = ?, email = ?, rol = ?";
+    let params = [nombre, email, rol];
+
+    if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        sql += ", password = ?";
+        params.push(hashedPassword);
+    }
+
+    if (imagen) {
+        sql += ", imagen = ?";
+        params.push(imagen);
+    }
+
+    sql += " WHERE id_usuario = ?";
+    params.push(id_usuario);
+
+    db.query(sql, params, (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: El usuario a modificar no existe"});
+        };
+        res.json({mensaje : "Usuario actualizado exitosamente"});
+    });     
+};
+
+const destroyUsuario = (req, res) => {
+    const {id_usuario} = req.params;
+    const sql = "DELETE FROM usuarios WHERE id_usuario = ?";
+    db.query(sql, [id_usuario], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: El usuario a borrar no existe"});
+        };
+        res.json({mensaje : "Usuario Eliminado"});
+    }); 
+};
+
+const login = (req, res) => {
+    const { email, password } = req.body;
+    const sql = "SELECT * FROM usuarios WHERE email = ?";
+    db.query(sql, [email], async (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: "Error en el servidor" });
+        }
+        if (results.length === 0) {
+            return res.status(401).json({ error: "Credenciales inválidas" });
+        }
+        const user = results[0];
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            return res.status(401).json({ error: "Credenciales inválidas" });
+        }
+        const token = jwt.sign(
+            { id_usuario: user.id_usuario, email: user.email, rol: user.rol },
+            'enigma',
+            { expiresIn: '2h' }
+        );
+        res.json({ token, user: { id_usuario: user.id_usuario, nombre: user.nombre, email: user.email, rol: user.rol } });
+    });
+};
+
+// Funciones relacionadas con reservas
 const allReservas = (req, res) => {
     const sql = "SELECT * FROM reservas";
     db.query(sql, (error, rows) => {
@@ -67,7 +193,7 @@ const destroyReserva = (req, res) => {
     }); 
 };
 
-// Métodos para mesas
+// Funciones relacionadas con mesas
 const allMesas = (req, res) => {
     const sql = "SELECT * FROM mesas";
     db.query(sql, (error, rows) => {
@@ -134,7 +260,7 @@ const destroyMesa = (req, res) => {
     }); 
 };
 
-// Métodos para turnos
+// Funciones relacionadas con turnos
 const allTurnos = (req, res) => {
     const sql = "SELECT * FROM turnos";
     db.query(sql, (error, rows) => {
@@ -202,16 +328,28 @@ const destroyTurno = (req, res) => {
 };
 
 module.exports = {
+    checkAdminRole,
+    // Funciones relacionadas con usuarios
+    allUsuarios,
+    showUsuario,
+    register,
+    updateUsuario,
+    destroyUsuario,
+    login,
+    // Funciones relacionadas con reservas
     allReservas,
     showReserva,
     storeReserva,
     updateReserva,
     destroyReserva,
+    // Funciones relacionadas con mesas
     allMesas,
     showMesa,
     storeMesa,
     updateMesa,
+    
     destroyMesa,
+    // Funciones relacionadas con turnos
     allTurnos,
     showTurno,
     storeTurno,
