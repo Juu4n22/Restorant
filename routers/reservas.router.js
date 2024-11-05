@@ -45,4 +45,11 @@ router.post('/turnos', authMiddleware, controller.checkAdminRole, controller.sto
 router.put('/turnos/:id_turno', authMiddleware, controller.checkAdminRole, controller.updateTurno);
 router.delete('/turnos/:id_turno', authMiddleware, controller.checkAdminRole, controller.destroyTurno);
 
+// Nuevas rutas para categorías
+router.get('/categorias', authMiddleware, controller.allCategorias);
+router.get('/categorias/:id_categoria', authMiddleware, controller.showCategoria);
+router.post('/categorias', authMiddleware, controller.checkAdminRole, controller.storeCategoria);
+router.put('/categorias/:id_categoria', authMiddleware, controller.checkAdminRole, controller.updateCategoria);
+router.delete('/categorias/:id_categoria', authMiddleware, controller.checkAdminRole, controller.destroyCategoria);
+
 module.exports = router;

@@ -327,6 +327,74 @@ const destroyTurno = (req, res) => {
     }); 
 };
 
+// Nuevas funciones relacionadas con categorías
+const allCategorias = (req, res) => {
+    const sql = "SELECT * FROM categorias";
+    db.query(sql, (error, rows) => {
+        
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        res.json(rows);
+    }); 
+};
+
+const showCategoria = (req, res) => {
+    const {id_categoria} = req.params;
+    const sql = "SELECT * FROM categorias WHERE id_categoria = ?";
+    db.query(sql,[id_categoria], (error, rows) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(rows.length == 0){
+            return res.status(404).send({error : "ERROR: No existe la categoría buscada"});
+        };
+        res.json(rows[0]);
+    }); 
+};
+
+const storeCategoria = (req, res) => {
+    const {nombre, descripcion} = req.body;
+    const sql = "INSERT INTO categorias (nombre, descripcion) VALUES (?,?)";
+    db.query(sql,[nombre, descripcion], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        const categoria = {...req.body, id_categoria: result.insertId};
+        res.status(201).json(categoria);
+    });     
+};
+
+const updateCategoria = (req, res) => {
+    const {id_categoria} = req.params;
+    const {nombre, descripcion} = req.body;
+    const sql ="UPDATE categorias SET nombre = ?, descripcion = ? WHERE id_categoria = ?";
+    db.query(sql,[nombre, descripcion, id_categoria], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: La categoría a modificar no existe"});
+        };
+        const categoria = {...req.body, ...req.params};
+        res.json(categoria);
+    });     
+};
+
+const destroyCategoria = (req, res) => {
+    const {id_categoria} = req.params;
+    const sql = "DELETE FROM categorias WHERE id_categoria = ?";
+    db.query(sql,[id_categoria], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: La categoría a borrar no existe"});
+        };
+        res.json({mensaje : "Categoría Eliminada"});
+    }); 
+};
+
 module.exports = {
     checkAdminRole,
     // Funciones relacionadas con usuarios
@@ -347,12 +415,17 @@ module.exports = {
     showMesa,
     storeMesa,
     updateMesa,
-    
     destroyMesa,
     // Funciones relacionadas con turnos
     allTurnos,
     showTurno,
     storeTurno,
     updateTurno,
-    destroyTurno
+    destroyTurno,
+    // Nuevas funciones relacionadas con categorías
+    allCategorias,
+    showCategoria,
+    storeCategoria,
+    updateCategoria,
+    destroyCategoria
 };
