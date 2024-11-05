@@ -2,10 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db/db');
 
-// NUEVO: CLAVE SECRETA PARA JWT
+//CLAVE SECRETA PARA JWT
 const SECRET_KEY = 'enigma';
 
-// NUEVO: FUNCIÓN PARA REGISTRAR USUARIOS
+//FUNCIÓN PARA REGISTRAR USUARIOS
 exports.register = (req, res) => {
     const { nombre, email, password, rol } = req.body;
     const imagen = req.file ? req.file.filename : null;
@@ -27,7 +27,7 @@ exports.register = (req, res) => {
     });
 };
 
-// NUEVO: FUNCIÓN PARA INICIAR SESIÓN
+//FUNCIÓN PARA INICIAR SESIÓN
 exports.login = (req, res) => {
     const { email, password } = req.body;
     

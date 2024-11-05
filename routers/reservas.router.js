@@ -52,4 +52,11 @@ router.post('/categorias', authMiddleware, controller.checkAdminRole, controller
 router.put('/categorias/:id_categoria', authMiddleware, controller.checkAdminRole, controller.updateCategoria);
 router.delete('/categorias/:id_categoria', authMiddleware, controller.checkAdminRole, controller.destroyCategoria);
 
+
+// Rutas para platos
+router.get('/platos', authMiddleware, controller.allPlatos);
+router.get('/platos/:id_plato', authMiddleware, controller.showPlato);
+router.post('/platos', authMiddleware, controller.checkAdminRole, controller.storePlato);
+router.put('/platos/:id_plato', authMiddleware, controller.checkAdminRole, controller.updatePlato);
+router.delete('/platos/:id_plato', authMiddleware, controller.checkAdminRole, controller.destroyPlato);
 module.exports = router;

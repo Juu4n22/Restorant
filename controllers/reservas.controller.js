@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // Función para verificar el rol de administrador
 const checkAdminRole = (req, res, next) => {
-    console.log('User in checkAdminRole:', req.user); 
+    console.log('usuario en checkAdminRole:', req.user); 
     if (req.user && req.user.rol === 'admin') {
         next();
     } else {
@@ -395,6 +395,73 @@ const destroyCategoria = (req, res) => {
     }); 
 };
 
+// Funciones relacionadas con platos
+const allPlatos = (req, res) => {
+    const sql = "SELECT * FROM platos";
+    db.query(sql, (error, rows) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        res.json(rows);
+    }); 
+};
+
+const showPlato = (req, res) => {
+    const {id_plato} = req.params;
+    const sql = "SELECT * FROM platos WHERE id_plato = ?";
+    db.query(sql,[id_plato], (error, rows) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(rows.length == 0){
+            return res.status(404).send({error : "ERROR: No existe el plato buscado"});
+        };
+        res.json(rows[0]);
+    }); 
+};
+
+const storePlato = (req, res) => {
+    const {nombre, descripcion, precio, id_categoria} = req.body;
+    const sql = "INSERT INTO platos (nombre, descripcion, precio, id_categoria) VALUES (?,?,?,?)";
+    db.query(sql,[nombre, descripcion, precio, id_categoria], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        const plato = {...req.body, id_plato: result.insertId};
+        res.status(201).json(plato);
+    });     
+};
+
+const updatePlato = (req, res) => {
+    const {id_plato} = req.params;
+    const {nombre, descripcion, precio, id_categoria} = req.body;
+    const sql ="UPDATE platos SET nombre = ?, descripcion = ?, precio = ?, id_categoria = ? WHERE id_plato = ?";
+    db.query(sql,[nombre, descripcion, precio, id_categoria, id_plato], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: El plato a modificar no existe"});
+        };
+        const plato = {...req.body, ...req.params};
+        res.json(plato);
+    });     
+};
+
+const destroyPlato = (req, res) => {
+    const {id_plato} = req.params;
+    const sql = "DELETE FROM platos WHERE id_plato = ?";
+    db.query(sql,[id_plato], (error, result) => {
+        if(error){
+            return res.status(500).json({error : "ERROR: Intente más tarde por favor"});
+        }
+        if(result.affectedRows == 0){
+            return res.status(404).send({error : "ERROR: El plato a borrar no existe"});
+        };
+        res.json({mensaje : "Plato Eliminado"});
+    }); 
+};
+
 module.exports = {
     checkAdminRole,
     // Funciones relacionadas con usuarios
@@ -427,5 +494,11 @@ module.exports = {
     showCategoria,
     storeCategoria,
     updateCategoria,
-    destroyCategoria
+    destroyCategoria,
+// Nuevas funciones relacionadas con platos
+    allPlatos,
+    showPlato,
+    storePlato,
+    updatePlato,
+    destroyPlato
 };

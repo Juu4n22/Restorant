@@ -38,7 +38,7 @@ const authenticateJWT = (req, res, next) => {
     }
 };
 
-// NUEVO: USAR EL ROUTER DE AUTENTICACIÓN
+// PARA UTILIZAR EL ROUTER DE AUTENTICACIÓN
 app.use('/auth', authRouter);
 app.use('/reservas', reservasRouter);
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 
-// NUEVO: RUTAS DE AUTENTICACIÓN
+//RUTAS DE AUTENTICACIÓN
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
